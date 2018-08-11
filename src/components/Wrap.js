@@ -9,6 +9,11 @@ import setTimer from '../actions/action_set_timer'
 import setPlaying from '../actions/action_set_playing'
 import {bindActionCreators} from 'redux'
 
+/**
+  * Bugs
+  * #1: last letter typed carries out to first letter of another word
+  **/
+
 class Wrap extends Component
 {
   constructor(props)
@@ -31,8 +36,10 @@ class Wrap extends Component
     this.EXECUTED_TIMEOUTS = []
   }
 
-  componentWillMount = _ => document.addEventListener('keypress', this.handleKeyPress.bind(this), false)
-  componentWillUnmount = _ => document.removeEventListener('keypress', this.handleKeyPress)
+  attachKeyPress = _ => document.addEventListener('keypress', this.handleKeyPress.bind(this), false)
+  detachKeyPress = _ => document.removeEventListener('keypress', this.handleKeyPress)
+  // componentWillMount = _ => this.attachKeyPress()
+  // componentWillUnmount = _ => this.detachKeyPress()
 
   handleKeyPress(e)
   {
@@ -40,7 +47,7 @@ class Wrap extends Component
     const typed_words = this.state.typed_words || []
     let word;
 
-    // paused state
+    // pause state
     if ( ! this.props.playing ) return
 
     // start counter
@@ -158,6 +165,8 @@ class Wrap extends Component
         })
       } catch ( e ) { /* pass */ }
 
+      // detach keypress
+      this.detachKeyPress()
     } else {
       // start
       this.props.setPlaying( true )
@@ -175,6 +184,10 @@ class Wrap extends Component
         }
       })
       this.setState( { timeoutIds, timeouts } )
+
+      // attach keypress
+      this.detachKeyPress()
+      this.attachKeyPress()
     }
   }
 
